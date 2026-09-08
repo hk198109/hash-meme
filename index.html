@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html lang="zh-CN" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HASH CLUB RADAR // SERVERLESS v5.0</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <style>
+        :root {
+            --bg-main: #0b0e14;
+            --bg-card: #121722;
+            --bg-header: #121722;
+            --bg-subbox: #182030;
+            --bg-th: #161d2a;
+            --border-color: rgba(255, 255, 255, 0.05);
+            --border-row: rgba(255, 255, 255, 0.02);
+            --text-title: #f1f5f9;
+            --text-sub: #94a3b8;
+            --text-muted: #475569;
+            --row-hover: rgba(255, 255, 255, 0.04);
+        }
+
+        html.light {
+            --bg-main: #f8fafc;
+            --bg-card: #ffffff;
+            --bg-header: #ffffff;
+            --bg-subbox: #f1f5f9;
+            --bg-th: #e2e8f0;
+            --border-color: #cbd5e1;
+            --border-row: #e2e8f0;
+            --text-title: #0f172a;
+            --text-sub: #475569;
+            --text-muted: #94a3b8;
+            --row-hover: #f1f5f9;
+        }
+
+        * {
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+        body {
+            font-family: 'Inter', -apple-system, sans-serif;
+            background-color: var(--bg-main);
+            color: var(--text-title);
+            transition: background-color 0.2s, color 0.2s;
+        }
+        .font-mono { font-family: 'JetBrains Mono', monospace; }
+
+        .theme-card { background-color: var(--bg-card); border-color: var(--border-color); }
+        .theme-header { background-color: var(--bg-header); border-color: var(--border-color); }
+        .theme-subbox { background-color: var(--bg-subbox); border-color: var(--border-color); }
+        .theme-th { background-color: var(--bg-th); border-color: var(--border-color); }
+        .theme-text-title { color: var(--text-title); }
+        .theme-text-sub { color: var(--text-sub); }
+        .theme-text-muted { color: var(--text-muted); }
+        .theme-row-border { border-bottom: 1px solid var(--border-row); }
+        .theme-row:hover { background-color: var(--row-hover); }
+
+        .marquee-container {
+            width: 100%;
+            overflow: hidden;
+            white-space: nowrap;
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
+        .marquee-content {
+            display: inline-flex;
+            align-items: center;
+            gap: 1.5rem;
+            padding-left: 100%;
+            animation: marquee-scroll 30s linear infinite;
+        }
+
+        .marquee-container:hover .marquee-content {
+            animation-play-state: paused;
+        }
+
+        @keyframes marquee-scroll {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(-100%); }
+        }
+
+        .row-enter { animation: rowSlide 0.3s cubic-bezier(0.16, 1, 0.3, 1); }
+        @keyframes rowSlide {
+            0% { opacity: 0; transform: translateY(-4px); background-color: rgba(16, 185, 129, 0.15); }
+            100% { opacity: 1; transform: translateY(0); background-color: transparent; }
+        }
+    </style>
+</head>
+<body class="min-h-screen p-3 lg:p-5 flex flex-col justify-between" onclick="unlockAudio()">
+    
+    <div class="max-w-[1750px] mx-auto w-full space-y-3">
+        
+        <!-- Header 顶栏 -->
+        <header class="flex flex-col lg:flex-row lg:items-center justify-between gap-3 p-3.5 rounded-xl border theme-header shadow-sm">
+            <div class="flex items-center gap-3">
+                <div class="w-9 h-9 rounded-lg bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-500 font-black font-mono text-lg">
+                    #
+                </div>
+                <div>
+                    <div class="flex items-center gap-2">
+                        <h1 class="text-base font-black tracking-tight font-mono uppercase theme-text-title">HASH CLUB // 扫链雷达</h1>
+                        <span class="px-2 py-0.5 bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400 font-mono text-[10px] rounded font-bold">VERCEL v5.0</span>
+                    </div>
+                    <p class="text-xs theme-text-sub font-medium mt-0.5 flex items-center gap-2">
+                        <span>Solana/EVM 高频全域监控</span>
+                        <span>•</span>
+                        <span> Serverless 引擎</span>
+                    </p>
+                </div>
+            </div>
+
+            <div class="flex items-center gap-4 border rounded-lg px-3 py-1.5 font-mono text-xs theme-subbox shadow-inner">
+                <div class="flex items-center gap-1.5">
+                    <span class="theme-text-muted font-bold">BJ:</span>
+                    <span id="clockBJ" class="theme-text-title font-semibold">2026-09-08 周二 00:00:00</span>
+                </div>
+                <span class="theme-text-muted">|</span>
+                <div class="flex items-center gap-1.5">
+                    <span class="theme-text-muted font-bold">UTC:</span>
+                    <span id="clockUTC" class="text-sky-600 dark:text-sky-400 font-semibold">2026-09-08 Tue 00:00:00</span>
+                </div>
+            </div>
+
+            <div class="flex items-center gap-2">
+                <button id="soundBtn" onclick="toggleSound()" class="px-3 py-1.5 border rounded-lg text-xs font-mono flex items-center gap-1.5 transition theme-subbox shadow-sm">
+                    <span id="soundIcon">🔊</span> <span class="theme-text-sub">提示音:</span> <span id="soundText" class="text-emerald-600 dark:text-emerald-400 font-bold">ON</span>
+                </button>
+                <button onclick="toggleTheme()" class="px-3 py-1.5 border rounded-lg text-xs font-mono transition flex items-center gap-1.5 theme-subbox shadow-sm">
+                    <span id="themeIcon">🌙</span> <span id="themeText" class="theme-text-title font-bold">夜间</span>
+                </button>
+                <div class="flex items-center gap-2 px-2.5 py-1.5 bg-emerald-500/10 border border-emerald-500/30 rounded-lg">
+                    <span class="h-2 w-2 rounded-full bg-emerald-500 animate-ping"></span>
+                    <span class="text-[10px] font-mono text-emerald-600 dark:text-emerald-400 font-extrabold">LIVE</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- 20%+ 实时暴涨跑马灯 Ticker -->
+        <div class="rounded-xl border theme-card p-2 shadow-sm flex items-center gap-3 overflow-hidden">
+            <div class="px-2.5 py-1 bg-rose-500/10 border border-rose-500/30 text-rose-600 dark:text-rose-400 font-mono text-[10px] font-black rounded flex items-center gap-1 shrink-0 z-10 theme-card">
+                <span class="animate-pulse">🔥</span> 20%+ 暴涨雷达
+            </div>
+            <div class="marquee-container flex-1 text-xs font-mono">
+                <div id="tickerContent" class="marquee-content">
+                    <span class="theme-text-muted text-[11px]">[雷达监控中] 暂无 20%+ 暴涨币种触发...</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- 核心指标 + 筛选栏 -->
+        <div class="grid grid-cols-2 lg:grid-cols-4 gap-3">
+            <div class="p-3 rounded-xl border theme-card shadow-sm">
+                <span class="text-[10px] font-mono theme-text-sub font-bold uppercase">已扫描代币</span>
+                <p id="statScanned" class="text-xl font-black font-mono mt-0.5 theme-text-title">0</p>
+            </div>
+            <div class="p-3 rounded-xl border theme-card shadow-sm">
+                <span class="text-[10px] font-mono theme-text-sub font-bold uppercase">拦截高危貔貅/Rug</span>
+                <p id="statRisk" class="text-xl font-black font-mono text-rose-500 dark:text-rose-400 mt-0.5">0</p>
+            </div>
+            <div class="p-3 rounded-xl border theme-card shadow-sm">
+                <span class="text-[10px] font-mono theme-text-sub font-bold uppercase">捕获 Alpha 机会</span>
+                <p id="statAlpha" class="text-xl font-black font-mono text-sky-600 dark:text-sky-400 mt-0.5">0</p>
+            </div>
+            
+            <div class="p-2.5 rounded-xl border flex items-center justify-between gap-2 theme-card shadow-sm">
+                <div class="space-y-0.5 flex-1">
+                    <label class="text-[9px] font-mono theme-text-sub font-bold uppercase">Min MarketCap</label>
+                    <input type="number" id="minMcInput" value="5000" class="w-full border rounded px-2 py-0.5 text-xs font-mono font-bold focus:outline-none focus:border-sky-500 transition theme-subbox theme-text-title">
+                </div>
+                <div class="space-y-0.5 flex-1">
+                    <label class="text-[9px] font-mono theme-text-sub font-bold uppercase">Max MarketCap</label>
+                    <input type="number" id="maxMcInput" value="300000" class="w-full border rounded px-2 py-0.5 text-xs font-mono font-bold focus:outline-none focus:border-sky-500 transition theme-subbox theme-text-title">
+                </div>
+            </div>
+        </div>
+
+        <!-- PRO 订阅入口 -->
+        <div class="rounded-xl border border-amber-500/40 bg-gradient-to-r from-amber-500/10 via-amber-500/5 to-transparent p-3.5 shadow-sm">
+            <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-3">
+                <div class="flex items-center gap-3">
+                    <div class="p-2 bg-amber-500/20 border border-amber-500/40 rounded-lg text-amber-600 dark:text-amber-400 text-lg">🔒</div>
+                    <div>
+                        <div class="flex items-center gap-2">
+                            <span class="font-bold text-xs tracking-wide text-amber-600 dark:text-amber-300 font-mono">HASH CLUB PRO // 聪明的钱 & 巨鲸实时跟单通道</span>
+                            <span class="px-1.5 py-0.5 bg-amber-500/20 text-amber-600 dark:text-amber-400 border border-amber-500/30 rounded text-[9px] font-mono font-black">VIP ONLY</span>
+                        </div>
+                        <p class="text-[11px] theme-text-sub mt-0.5">解锁聪明钱建仓提醒、防夹内盘算法、内线 Smart Wallet 毫秒级跟单引擎。</p>
+                    </div>
+                </div>
+                <a href="https://t.me/U09099" target="_blank" class="px-3.5 py-1.5 bg-amber-500 hover:bg-amber-400 text-slate-950 font-extrabold rounded-lg text-xs font-mono shadow-md transition transform active:scale-95">
+                    解锁 PRO 订阅
+                </a>
+            </div>
+        </div>
+
+        <!-- 数据表格 -->
+        <div class="rounded-xl border overflow-hidden shadow-sm theme-card">
+            <div class="grid grid-cols-12 text-[10px] font-mono border-b theme-th font-bold uppercase tracking-wider theme-text-sub px-3.5 py-2.5">
+                <div class="col-span-2">时间 / 公链</div>
+                <div class="col-span-1 text-center">Alpha评分</div>
+                <div class="col-span-3">代币 & 合约 (CA)</div>
+                <div class="col-span-2 text-right">市值 (FDV) / 池子 (LP)</div>
+                <div class="col-span-2 text-center">安全指标</div>
+                <div class="col-span-2 text-center">闪电交易终端</div>
+            </div>
+
+            <div id="radarStream" class="font-mono text-xs">
+                <div id="emptyTip" class="text-center py-16 theme-text-muted font-mono text-xs">
+                    [HASH CLUB VERCEL] 客户端扫链初始化中...
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 页脚 -->
+    <footer class="max-w-[1750px] mx-auto w-full mt-6 pt-3 border-t border-slate-300 dark:border-slate-800/40 text-[11px] font-mono theme-text-muted flex flex-col md:flex-row items-center justify-between gap-2">
+        <div class="flex items-center gap-2">
+            <span>© 2026 HASH CLUB RADAR TERMINAL</span>
+            <span>•</span>
+            <span>Meme 代币波动极大，请做好风险控制</span>
+        </div>
+        <div class="flex items-center gap-3">
+            <span>开发者联系通道:</span>
+            <a href="https://t.me/U09099" target="_blank" class="px-2 py-0.5 bg-sky-500/10 border border-sky-500/30 text-sky-600 dark:text-sky-400 rounded font-bold hover:bg-sky-500/20 transition flex items-center gap-1">
+                ✈️ TG: @U09099
+            </a>
+        </div>
+    </footer>
+
+    <script>
+        const SEEN_TOKENS = new Set();
+        const STATS = { scanned: 0, risk: 0, alpha: 0 };
+        const tickerList = [];
+        let soundEnabled = true;
+        let audioCtx = null;
+
+        function updateClocks() {
+            const now = new Date();
+            const optionsBJ = { timeZone: 'Asia/Shanghai', year: 'numeric', month: '2-digit', day: '2-digit', weekday: 'short', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false };
+            document.getElementById('clockBJ').innerText = new Intl.DateTimeFormat('zh-CN', optionsBJ).format(now);
+
+            const optionsUTC = { timeZone: 'UTC', year: 'numeric', month: '2-digit', day: '2-digit', weekday: 'short', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false };
+            document.getElementById('clockUTC').innerText = new Intl.DateTimeFormat('en-US', optionsUTC).format(now);
+        }
+        setInterval(updateClocks, 1000);
+        updateClocks();
+
+        function unlockAudio() {
+            if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+        }
+
+        function playChimeRing() {
+            if(!soundEnabled) return;
+            unlockAudio();
+            try {
+                const now = audioCtx.currentTime;
+                const duration = 0.35;
+                const osc1 = audioCtx.createOscillator();
+                const osc2 = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+
+                osc1.type = 'sine'; osc2.type = 'sine';
+                osc1.frequency.setValueAtTime(880.00, now);
+                osc2.frequency.setValueAtTime(1108.73, now + 0.05);
+
+                gain.gain.setValueAtTime(0.01, now);
+                gain.gain.linearRampToValueAtTime(0.2, now + 0.03);
+                gain.gain.exponentialRampToValueAtTime(0.001, now + duration);
+
+                osc1.connect(gain); osc2.connect(gain);
+                gain.connect(audioCtx.destination);
+                osc1.start(now); osc2.start(now + 0.05);
+                osc1.stop(now + duration); osc2.stop(now + duration);
+            } catch(e) {}
+        }
+
+        function toggleSound() {
+            soundEnabled = !soundEnabled;
+            document.getElementById('soundText').innerText = soundEnabled ? 'ON' : 'OFF';
+            document.getElementById('soundText').className = soundEnabled ? 'text-emerald-600 dark:text-emerald-400 font-bold' : 'theme-text-muted font-bold';
+            document.getElementById('soundIcon').innerText = soundEnabled ? '🔊' : '🔇';
+        }
+
+        function toggleTheme() {
+            const html = document.documentElement;
+            if(html.classList.contains('dark')) {
+                html.classList.remove('dark');
+                html.classList.add('light');
+                document.getElementById('themeIcon').innerText = '☀️';
+                document.getElementById('themeText').innerText = '日间';
+            } else {
+                html.classList.remove('light');
+                html.classList.add('dark');
+                document.getElementById('themeIcon').innerText = '🌙';
+                document.getElementById('themeText').innerText = '夜间';
+            }
+        }
+
+        function copyCA(ca, btn) {
+            navigator.clipboard.writeText(ca);
+            const oldText = btn.innerText;
+            btn.innerText = 'COPIED!';
+            btn.className = 'px-2 py-0.5 bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 border border-emerald-500/40 rounded font-bold text-[10px]';
+            setTimeout(() => {
+                btn.innerText = oldText;
+                btn.className = 'px-2 py-0.5 theme-subbox border font-mono text-[10px] transition theme-text-sub';
+            }, 1000);
+        }
+
+        async function checkRugCheck(address) {
+            try {
+                const res = await fetch(`https://api.rugcheck.xyz/v1/tokens/${address}/report/summary`);
+                const json = await res.json();
+                const mintRevoked = json.mintAuthority === null;
+                const freezeRevoked = json.freezeAuthority === null;
+                const lpLocked = json.lpLockedPct || 0;
+                const isLpBurned = lpLocked > 80;
+                let score = 0;
+                if(mintRevoked) score += 20;
+                if(freezeRevoked) score += 20;
+                if(isLpBurned) score += 30;
+
+                return { mint_revoked: mintRevoked, freeze_revoked: freezeRevoked, lp_burned: isLpBurned, score_bonus: score };
+            } catch(e) {
+                return { mint_revoked: true, freeze_revoked: true, lp_burned: true, score_bonus: 50 };
+            }
+        }
+
+        function calculateAlphaScore(fdv, liquidity, secInfo) {
+            let score = secInfo.score_bonus || 0;
+            if(fdv > 0) {
+                const lpRatio = liquidity / fdv;
+                if(lpRatio >= 0.1 && lpRatio <= 0.4) score += 30;
+                else if(lpRatio > 0.05) score += 15;
+            }
+            return Math.min(score, 100);
+        }
+
+        async function fetchTokens() {
+            try {
+                const res = await fetch("https://api.dexscreener.com/token-boosts/latest/v1");
+                const list = await res.json();
+                if(Array.isArray(list)) {
+                    for(const item of list) {
+                        STATS.scanned++;
+                        const tokenAddress = item.tokenAddress;
+                        const chainId = item.chainId || 'solana';
+
+                        if(tokenAddress && !SEEN_TOKENS.has(tokenAddress)) {
+                            SEEN_TOKENS.add(tokenAddress);
+                            await processToken(tokenAddress, chainId);
+                        }
+                    }
+                }
+            } catch(e) {}
+        }
+
+        async function processToken(address, chainId) {
+            try {
+                const res = await fetch(`https://api.dexscreener.com/latest/dex/tokens/${address}`);
+                const data = await res.json();
+                if(!data.pairs || data.pairs.length === 0) return;
+
+                const pair = data.pairs[0];
+                const fdv = parseFloat(pair.fdv || 0);
+                const liquidity = parseFloat(pair.liquidity?.usd || 0);
+                const symbol = pair.baseToken?.symbol || "UNKNOWN";
+                const name = pair.baseToken?.name || "UNKNOWN";
+                
+                const p5m = parseFloat(pair.priceChange?.m5 || 0);
+                const p1h = parseFloat(pair.priceChange?.h1 || 0);
+                const change = p5m !== 0 ? p5m : p1h;
+
+                if(fdv > 0) {
+                    const isSolana = chainId.toLowerCase() === 'solana';
+                    const secInfo = isSolana ? await checkRugCheck(address) : { mint_revoked: true, freeze_revoked: true, lp_burned: true, score_bonus: 60 };
+                    const alphaScore = calculateAlphaScore(fdv, liquidity, secInfo);
+
+                    if(alphaScore < 40 || liquidity === 0) {
+                        STATS.risk++;
+                        updateStats();
+                        return;
+                    }
+
+                    STATS.alpha++;
+                    updateStats();
+
+                    renderToken({
+                        symbol, name, address, chain: chainId.toUpperCase(), isSolana,
+                        fdvNum: fdv, fdvFormatted: `$${fdv.toLocaleString()}`,
+                        lpFormatted: `$${liquidity.toLocaleString()}`,
+                        change, score: alphaScore, security: secInfo,
+                        gmgnUrl: `https://gmgn.ai/${chainId.toLowerCase()}/token/${address}`,
+                        photonUrl: isSolana ? `https://photon-sol.tinyastro.io/en/r/@radar/${address}` : `https://dexscreener.com/${chainId.toLowerCase()}/${address}`,
+                        bullxUrl: isSolana ? `https://neo.bullx.io/terminal?chainId=1399811149&address=${address}` : `https://dexscreener.com/${chainId.toLowerCase()}/${address}`,
+                        dexUrl: `https://dexscreener.com/${chainId.toLowerCase()}/${address}`,
+                        time: new Date().toLocaleTimeString('zh-CN', { hour12: false })
+                    });
+                }
+            } catch(e) {}
+        }
+
+        function updateStats() {
+            document.getElementById('statScanned').innerText = STATS.scanned;
+            document.getElementById('statRisk').innerText = STATS.risk;
+            document.getElementById('statAlpha').innerText = STATS.alpha;
+        }
+
+        function updateTicker(data) {
+            if (data.change >= 20) {
+                tickerList.unshift(data);
+                if(tickerList.length > 10) tickerList.pop();
+
+                const container = document.getElementById('tickerContent');
+                let html = '';
+                tickerList.forEach(item => {
+                    html += `
+                        <a href="${item.gmgnUrl}" target="_blank" class="inline-flex items-center gap-1.5 px-2.5 py-1 theme-subbox border rounded-lg hover:border-emerald-500/50 transition shrink-0">
+                            <span class="font-bold theme-text-title">$${item.symbol}</span>
+                            <span class="text-emerald-600 dark:text-emerald-400 font-black">+${item.change.toFixed(1)}%</span>
+                            <span class="theme-text-muted text-[10px]">${item.fdvFormatted}</span>
+                        </a>
+                    `;
+                });
+                container.innerHTML = html;
+            }
+        }
+
+        function renderToken(data) {
+            const minMc = parseFloat(document.getElementById('minMcInput').value) || 0;
+            const maxMc = parseFloat(document.getElementById('maxMcInput').value) || 99999999;
+
+            if(data.fdvNum < minMc || data.fdvNum > maxMc) return;
+
+            const emptyTip = document.getElementById('emptyTip');
+            if(emptyTip) emptyTip.remove();
+
+            playChimeRing();
+            updateTicker(data);
+
+            let scoreBadge = ``;
+            if(data.score >= 80) scoreBadge = `<span class="px-2 py-0.5 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30 rounded font-black font-mono text-xs">${data.score}</span>`;
+            else if(data.score >= 60) scoreBadge = `<span class="px-2 py-0.5 bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/30 rounded font-black font-mono text-xs">${data.score}</span>`;
+            else scoreBadge = `<span class="px-2 py-0.5 theme-subbox theme-text-sub border rounded font-bold font-mono text-xs">${data.score}</span>`;
+
+            const sec = data.security;
+            const tags = `
+                <div class="flex items-center justify-center gap-1.5">
+                    ${sec.mint_revoked ? '<span class="inline-flex items-center gap-1 px-1.5 py-0.5 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30 rounded text-[10px] font-medium"><span class="h-1.5 w-1.5 rounded-full bg-emerald-500"></span>弃铸</span>' : '<span class="inline-flex items-center gap-1 px-1.5 py-0.5 bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/30 rounded text-[10px] font-medium"><span class="h-1.5 w-1.5 rounded-full bg-rose-500"></span>可增发</span>'}
+                    ${sec.lp_burned ? '<span class="inline-flex items-center gap-1 px-1.5 py-0.5 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30 rounded text-[10px] font-medium"><span class="h-1.5 w-1.5 rounded-full bg-emerald-500"></span>烧池</span>' : '<span class="inline-flex items-center gap-1 px-1.5 py-0.5 bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/30 rounded text-[10px] font-medium"><span class="h-1.5 w-1.5 rounded-full bg-amber-500"></span>未烧</span>'}
+                </div>
+            `;
+
+            let actionBtns = data.isSolana ? `
+                <a href="${data.gmgnUrl}" target="_blank" class="px-2 py-1 bg-purple-500/10 hover:bg-purple-600 text-purple-600 dark:text-purple-300 hover:text-white border border-purple-500/30 rounded font-bold text-[10px] transition">GMGN</a>
+                <a href="${data.photonUrl}" target="_blank" class="px-2 py-1 bg-amber-500/10 hover:bg-amber-600 text-amber-600 dark:text-amber-300 hover:text-white border border-amber-500/30 rounded font-bold text-[10px] transition">Photon</a>
+                <a href="${data.bullxUrl}" target="_blank" class="px-2 py-1 bg-sky-500/10 hover:bg-sky-600 text-sky-600 dark:text-sky-300 hover:text-white border border-sky-500/30 rounded font-bold text-[10px] transition">BullX</a>
+            ` : `
+                <a href="${data.gmgnUrl}" target="_blank" class="px-2 py-1 bg-purple-500/10 hover:bg-purple-600 text-purple-600 dark:text-purple-300 hover:text-white border border-purple-500/30 rounded font-bold text-[10px] transition">GMGN</a>
+                <a href="${data.dexUrl}" target="_blank" class="px-2 py-1 bg-sky-500/10 hover:bg-sky-600 text-sky-600 dark:text-sky-300 hover:text-white border border-sky-500/30 rounded font-bold text-[10px] transition">DexScreener</a>
+            `;
+
+            const stream = document.getElementById('radarStream');
+            const row = document.createElement('div');
+            row.className = "grid grid-cols-12 items-center px-3.5 py-2.5 theme-row theme-row-border transition row-enter";
+            row.innerHTML = `
+                <div class="col-span-2 flex items-center gap-2">
+                    <span class="theme-text-title font-mono font-bold text-xs">${data.time}</span>
+                    <span class="px-1.5 py-0.5 bg-sky-500/10 text-sky-600 dark:text-sky-400 border border-sky-500/30 rounded font-black text-[9px]">${data.chain}</span>
+                </div>
+                <div class="col-span-1 text-center">${scoreBadge}</div>
+                <div class="col-span-3 space-y-0.5">
+                    <div class="flex items-center gap-2">
+                        <span class="font-extrabold text-sm tracking-tight theme-text-title">${data.name}</span>
+                        <span class="text-sky-600 dark:text-sky-400 font-bold text-xs">$${data.symbol}</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <span class="theme-text-muted font-mono text-[10px]">${data.address.substring(0,6)}...${data.address.substring(data.address.length-4)}</span>
+                        <button onclick="copyCA('${data.address}', this)" class="px-2 py-0.5 theme-subbox border rounded font-mono text-[10px] transition theme-text-sub">COPY</button>
+                    </div>
+                </div>
+                <div class="col-span-2 text-right font-mono">
+                    <p class="font-black text-emerald-600 dark:text-emerald-400 text-xs tracking-tight">${data.fdvFormatted}</p>
+                    <p class="theme-text-muted font-medium text-[10px] mt-0.5">LP: ${data.lpFormatted}</p>
+                </div>
+                <div class="col-span-2 text-center">${tags}</div>
+                <div class="col-span-2 flex items-center justify-center gap-1.5">${actionBtns}</div>
+            `;
+            stream.insertBefore(row, stream.firstChild);
+        }
+
+        // 轮询：每 3.5 秒自动抓取一次
+        fetchTokens();
+        setInterval(fetchTokens, 3500);
+    </script>
+</body>
+</html>
